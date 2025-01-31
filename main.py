@@ -2,7 +2,9 @@ from sqlalchemy import select
 from fastapi import FastAPI
 
 from models import Base
-from routers import router_bank,router_city
+from routers.router_bank import router_bank
+from routers.router_city import router_city
+from routers.router_filial import router_filial
 from database import engine
 
 app=FastAPI()
@@ -17,6 +19,8 @@ async def setup_database():
 
 app.include_router(router_bank)
 app.include_router(router_city)
+app.include_router(router_filial)
+
 
 
 

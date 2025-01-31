@@ -5,3 +5,7 @@ class BankAddSchema(BaseModel):
 
 class CityAddSchema(BaseModel):
     name:str
+
+class FilialAddSchema(BaseModel):
+    bank_id:int
+    city_id:int
