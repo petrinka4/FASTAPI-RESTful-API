@@ -1,19 +1,20 @@
-from schemas import BankAddSchema
-from models import bankModel
+from schemas import BankAddSchema,CityAddSchema
+from models import bankModel,cityModel
 from database import new_session
-from sqlalchemy import select, update
+from sqlalchemy import select, update,insert,delete
 
 class BankRepository:
+    
     @classmethod
     async def add_one_bank(cls,data:BankAddSchema):
         async with new_session() as session:
-          bank_dict=data.model_dump()  
+            query=(insert(bankModel)
+                   .values(name=data.name)
+                   .returning(bankModel.id))   
+            result=await session.execute(query)
+            await session.commit()
+            return result.scalar()
 
-          new_bank=bankModel(**bank_dict)
-          session.add(new_bank)
-          await session.commit()
-          return new_bank.id
-        
 
 
     @classmethod
@@ -23,23 +24,27 @@ class BankRepository:
             result=await session.execute(query)
             return result.scalars().all()
         
+    
+
     @classmethod
     async def delete_one_bank(cls,bank_id:int):
         async with new_session() as session:
-            bank_del= await session.get(bankModel,bank_id)
-            if bank_del:
-                await session.delete(bank_del)
-                await session.commit()
+            query= delete(bankModel).where(bankModel.id==bank_id)
+            result=await session.execute(query)
+            await session.commit()
+            if (result.rowcount>0):
                 return {"ok":True}
-            return {"error":"Bank not found"}, 404 
+            else:
+                return {"error":"bank not found"},404
+          
 
     @classmethod
     async def get_one_bank(cls,bank_id:int):
         async with new_session() as session:
-           bank=await session.get(bankModel,bank_id)
-        if bank:
-            return bank
-        return {"error":"Bank not found"},404 
+           query=select(bankModel).where(bankModel.id==bank_id)
+           result=await session.execute(query)
+           return result.scalar_one_or_none()
+           
     
     @classmethod
     async def update_bank(cls,bank_id,data:BankAddSchema):
@@ -50,7 +55,55 @@ class BankRepository:
             return {"ok":True}
 
 
+class CityRepository:
+    @classmethod
+    async def add_one_city(cls,data:CityAddSchema):
+        async with new_session() as session:
+            query=(insert(cityModel)
+                   .values(name=data.name)
+                   .returning(cityModel.id))   
+            result=await session.execute(query)
+            await session.commit()
+            return result.scalar()
 
+
+
+    @classmethod
+    async def get_all_cities(cls):
+        async with new_session() as session:
+            query=select(cityModel)
+            result=await session.execute(query)
+            return result.scalars().all()
+        
+    
+
+    @classmethod
+    async def delete_one_city(cls,city_id:int):
+        async with new_session() as session:
+            query= delete(cityModel).where(cityModel.id==city_id)
+            result=await session.execute(query)
+            await session.commit()
+            if (result.rowcount>0):
+                return {"ok":True}
+            else:
+                return {"error":"bank not found"},404
+          
+
+    @classmethod
+    async def get_one_city(cls,city_id:int):
+        async with new_session() as session:
+           query=select(cityModel).where(cityModel.id==city_id)
+           result=await session.execute(query)
+           return result.scalar_one_or_none()
+           
+    
+    @classmethod
+    async def update_city(cls,city_id,data:CityAddSchema):
+        async with new_session() as session:
+            query=update(cityModel).where(cityModel.id==city_id).values(name=data.name)
+            await session.execute(query)
+            await session.commit()
+            return {"ok":True}
 
 
 
