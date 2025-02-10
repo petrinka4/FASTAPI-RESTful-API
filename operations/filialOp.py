@@ -5,13 +5,7 @@ from sqlalchemy import select, update,insert,delete
 
 class FilialOperations: 
 
-    @classmethod
-    async def get_all_filials(cls):
-        async with new_session() as session:
-            query=select(filialModel)
-            result=await session.execute(query)
-            return result.scalars().all()
-        
+  
     @classmethod
     async def add_one_filial(cls,data:FilialAddSchema):
         async with new_session() as session:
@@ -32,25 +26,7 @@ class FilialOperations:
             await session.commit()
             return result.scalar()
         
-    @classmethod
-    async def delete_one_filial(cls,filial_id:int):
-        async with new_session() as session:
-            query= delete(filialModel).where(filialModel.id==filial_id)
-            result=await session.execute(query)
-            await session.commit()
-            if (result.rowcount>0):
-                return {"ok":True}
-            else:
-                return {"error":"filial not found"},404 
-            
-
-    @classmethod
-    async def get_one_filial(cls,filial_id:int):
-        async with new_session() as session:
-           query=select(filialModel).where(filialModel.id==filial_id)
-           result=await session.execute(query)
-           return result.scalar_one_or_none()
-        
+   
     @classmethod
     async def update_filial(cls,filial_id,data:FilialAddSchema):
         async with new_session() as session:

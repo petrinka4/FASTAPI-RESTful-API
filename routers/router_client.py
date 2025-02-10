@@ -1,8 +1,10 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends
 
+from models import clientModel
 from schemas import ClientAddSchema
 from operations.clientOp import ClientOperations
+from operations.generalOp import GeneralOperations
 
 router_client=APIRouter(
     prefix="/clients",
@@ -12,7 +14,7 @@ router_client=APIRouter(
 #получение всех клиентов
 @router_client.get("")
 async def get_clients():
-    clients=await ClientOperations.get_all_clients()
+    clients=await GeneralOperations.get_all(clientModel)
     return clients
 
 #добавление клиента
@@ -26,13 +28,13 @@ async def add_client(data: Annotated[ClientAddSchema, Depends()]):
 #удаление клиента
 @router_client.delete("/{client_id}")
 async def delete_client(client_id:int):
-    result=await ClientOperations.delete_one_client(client_id)
+    result=await GeneralOperations.delete_one(client_id,clientModel)
     return result
 
 #получение клиента по id
 @router_client.get("/{client_id}")
 async def get_client_by_id(client_id:int):
-    result=await ClientOperations.get_one_client(client_id)
+    result=await GeneralOperations.get_one(client_id,clientModel)
     return result
 
 #апдейт клиента по id

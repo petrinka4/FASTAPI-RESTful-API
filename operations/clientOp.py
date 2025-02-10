@@ -19,30 +19,6 @@ class ClientOperations:
             await session.commit()
             return result.scalar()
         
-    @classmethod
-    async def get_all_clients(cls):
-        async with new_session() as session:
-            query=select(clientModel)
-            result=await session.execute(query)
-            return result.scalars().all()
-
-    @classmethod
-    async def delete_one_client(cls,client_id:int):
-        async with new_session() as session:
-            query=delete(clientModel).where(clientModel.id==client_id)
-            result=await session.execute(query)
-            await session.commit()
-            if (result.rowcount>0):
-                return {"ok":True}
-            else:
-                return {"ok":False,"error":"Client not found"},404
-            
-    @classmethod
-    async def get_one_client(cls,client_id:int):
-        async with new_session() as session:
-            query=select(clientModel).where(clientModel.id==client_id)
-            result=await session.execute(query)
-            return result.scalar_one_or_none()
         
     @classmethod
     async def update_client(cls,client_id:int,data:ClientAddSchema):

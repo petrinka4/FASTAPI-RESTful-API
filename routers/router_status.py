@@ -1,8 +1,10 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends
 
+from models import social_statusModel
 from schemas import Social_StatusAddSchema
 from operations.social_statusOp import StatusOperations
+from operations.generalOp import GeneralOperations
 
 router_status=APIRouter(
     prefix="/social_status",
@@ -22,7 +24,7 @@ async def add_status(data:Annotated[Social_StatusAddSchema,Depends()]):
 #получение всех статусов
 @router_status.get("")
 async def get_statuses():
-    statuses=await StatusOperations.get_all_statuses()
+    statuses=await GeneralOperations.get_all(social_statusModel)
     return statuses
 
 
@@ -31,14 +33,14 @@ async def get_statuses():
 #удаление статуса по id
 @router_status.delete("/{status_id}") 
 async def delete_status(status_id:int):
-    data=await StatusOperations.delete_one_status(status_id)
+    data=await GeneralOperations.delete_one(status_id,social_statusModel)
     return data
       
 
 #получение статуса по id
 @router_status.get("/{status_id}")
 async def get_status_by_id(status_id:int):
-  data=await StatusOperations.get_one_status(status_id)
+  data=await GeneralOperations.get_one(status_id,social_statusModel)
   return data
 
 #апдейт статуса по id

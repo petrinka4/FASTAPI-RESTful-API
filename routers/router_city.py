@@ -1,8 +1,10 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends
 
+from models import cityModel
 from schemas import CityAddSchema
 from operations.cityOp import CityOperations
+from operations.generalOp import GeneralOperations
 
 router_city=APIRouter(
     prefix="/cities",
@@ -22,7 +24,7 @@ async def add_city(data:Annotated[CityAddSchema,Depends()]):
 #получение всех городов
 @router_city.get("")
 async def get_cities():
-    cities=await CityOperations.get_all_cities()
+    cities=await GeneralOperations.get_all(cityModel)
     return cities
 
 
@@ -31,14 +33,14 @@ async def get_cities():
 #удаление города по id
 @router_city.delete("/{city_id}") 
 async def delete_city(city_id:int):
-    data=await CityOperations.delete_one_city(city_id)
+    data=await GeneralOperations.delete_one(city_id,cityModel)
     return data
       
 
 #получение города по id
 @router_city.get("/{city_id}")
 async def get_city_by_id(city_id:int):
-  data=await CityOperations.get_one_city(city_id)
+  data=await GeneralOperations.get_one(city_id,cityModel)
   return data
 
 #апдейт города по id
