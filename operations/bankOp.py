@@ -1,5 +1,5 @@
 from schemas import BankAddSchema
-from models import bankModel
+from models.bankModel import bankModel
 from database import new_session
 from sqlalchemy import select, update,insert,delete
 

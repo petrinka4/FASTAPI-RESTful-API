@@ -1,5 +1,8 @@
 from schemas import AccountAddSchema
-from models import accountModel,bankModel,clientModel
+from models.accountModel import accountModel
+from models.bankModel import bankModel
+from models.clientModel import clientModel
+
 from database import new_session
 from sqlalchemy import select, update,insert,delete
 

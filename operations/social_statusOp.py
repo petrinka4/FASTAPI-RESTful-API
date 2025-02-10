@@ -1,5 +1,5 @@
 from schemas import Social_StatusAddSchema
-from models import social_statusModel
+from models.social_statusModel import social_statusModel
 from database import new_session
 from sqlalchemy import select, update,insert,delete
 

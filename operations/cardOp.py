@@ -1,5 +1,6 @@
 from schemas import CardAddSchema
-from models import cardModel,accountModel
+from models.accountModel import accountModel
+from models.cardModel import cardModel
 from database import new_session
 from sqlalchemy import select, update,insert,delete
 

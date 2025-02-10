@@ -1,5 +1,8 @@
 from schemas import FilialAddSchema
-from models import filialModel,bankModel,cityModel
+from models.filialModel import filialModel
+from models.bankModel import bankModel
+from models.cityModel import cityModel
+
 from database import new_session
 from sqlalchemy import select, update,insert,delete
 

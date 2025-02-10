@@ -1,5 +1,6 @@
 from schemas import CityAddSchema
-from models import cityModel
+from models.cityModel import cityModel
+
 from database import new_session
 from sqlalchemy import select, update,insert,delete
 

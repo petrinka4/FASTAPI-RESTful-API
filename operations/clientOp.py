@@ -1,5 +1,6 @@
 from schemas import ClientAddSchema
-from models import clientModel,social_statusModel
+from models.clientModel import clientModel
+from models.social_statusModel import social_statusModel
 from database import new_session
 from sqlalchemy import select, update,insert,delete
 
