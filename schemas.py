@@ -16,3 +16,12 @@ class Social_StatusAddSchema(BaseModel):
 class ClientAddSchema(BaseModel):
     name:str
     social_status_id:int
+
+class AccountAddSchema(BaseModel):
+    balance:int
+    client_id:int
+    bank_id:int
+
+class CardAddSchema(BaseModel):
+    balance:int
+    account_id:int
