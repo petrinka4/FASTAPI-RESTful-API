@@ -35,6 +35,12 @@ async def get_client_by_id(client_id:int):
     result=await ClientOperations.get_one_client(client_id)
     return result
 
+#апдейт клиента по id
+@router_client.put("/{client_id}")
+async def update_client_by_id(client_id:int,client:Annotated[ClientAddSchema,Depends()]):
+    result=await ClientOperations.update_client(client_id,client)
+    return result
+
 
 
 

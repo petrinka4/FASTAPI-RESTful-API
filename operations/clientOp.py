@@ -43,6 +43,25 @@ class ClientOperations:
             query=select(clientModel).where(clientModel.id==client_id)
             result=await session.execute(query)
             return result.scalar_one_or_none()
+        
+    @classmethod
+    async def update_client(cls,client_id:int,data:ClientAddSchema):
+        async with new_session() as session:
+            query=select(clientModel).where(clientModel.id==client_id)
+            result=await session.execute(query)
+
+            if (result.scalar_one_or_none()==None):
+                return {"ok":False,"error":"Incorrect client_id"}
+            query=select(social_statusModel).where(social_statusModel.id==data.social_status_id)
+            result=await session.execute(query)
+
+            if (result.scalar_one_or_none()==None):
+                return {"ok":False,"error":"Incorrect social_status_id"}
+           
+            query=update(clientModel).where(clientModel.id==client_id).values(name=data.name,social_status_id=data.social_status_id)
+            await session.execute(query)
+            await session.commit()
+            return {"ok":True}
 
             
             
