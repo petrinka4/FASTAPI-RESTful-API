@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from fastapi import FastAPI
 
-from models import Base
+from models.base import Base
 from routers.router_account import router_account
 from routers.router_bank import router_bank
 from routers.router_city import router_city

@@ -1,7 +1,7 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends
 
-from models import social_statusModel
+from models.social_statusModel import social_statusModel
 from schemas import Social_StatusAddSchema
 from operations.social_statusOp import StatusOperations
 from operations.generalOp import GeneralOperations

@@ -1,7 +1,7 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends
 
-from models import cardModel
+from models.cardModel import cardModel
 from schemas import CardAddSchema
 from operations.cardOp import CardOperations
 from operations.generalOp import GeneralOperations

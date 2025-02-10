@@ -1,7 +1,7 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends
 
-from models import filialModel
+from models.filialModel import filialModel
 from schemas import FilialAddSchema
 from operations.filialOp import FilialOperations
 from operations.generalOp import GeneralOperations

@@ -1,7 +1,7 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends
 
-from models import clientModel
+from models.clientModel import clientModel
 from schemas import ClientAddSchema
 from operations.clientOp import ClientOperations
 from operations.generalOp import GeneralOperations

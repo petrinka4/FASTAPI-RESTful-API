@@ -1,7 +1,7 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends
 
-from models import cityModel
+from models.cityModel import cityModel
 from schemas import CityAddSchema
 from operations.cityOp import CityOperations
 from operations.generalOp import GeneralOperations

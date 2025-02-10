@@ -1,7 +1,6 @@
-from sqlalchemy.orm import DeclarativeBase,Mapped,mapped_column
+from sqlalchemy.orm import Mapped,mapped_column
+from models.base import Base
 
-class Base(DeclarativeBase):
-    pass
 class bankModel(Base):
     __tablename__="banks"
 
