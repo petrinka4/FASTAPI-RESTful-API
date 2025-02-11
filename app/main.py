@@ -1,4 +1,3 @@
-from sqlalchemy import select
 from fastapi import FastAPI
 
 from app.models.base import Base
@@ -14,6 +13,10 @@ from app.database import engine
 app = FastAPI()
 
 #drop and create db
+@app.get("/")
+def root():
+    return{"hi":"nigga"}
+
 @app.post("/setup_database")
 async def setup_database():
     async with engine.begin() as conn:
