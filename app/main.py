@@ -12,10 +12,8 @@ from app.database import engine
 
 app = FastAPI()
 
-#drop and create db
-@app.get("/")
-def root():
-    return{"hi":"nigga"}
+# drop and create db
+
 
 @app.post("/setup_database")
 async def setup_database():
