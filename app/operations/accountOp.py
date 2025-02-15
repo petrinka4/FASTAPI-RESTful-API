@@ -4,7 +4,7 @@ from app.models.bankModel import bankModel
 from app.models.clientModel import clientModel
 
 from app.database import new_session
-from sqlalchemy import select, update, insert, delete
+from sqlalchemy import select, text, update, insert, delete
 
 
 class AccountOperations:
@@ -27,11 +27,12 @@ class AccountOperations:
             if (data.balance < 0):
                 return {"ok": False, "error": "Incorrect value of balance"}
             query = (insert(accountModel)
-                     .values(bank_id=data.bank_id, client_id=data.client_id, balance=data.balance)
-                     .returning(accountModel.id))
+                     .values(bank_id=data.bank_id, client_id=data.client_id, balance=data.balance))
             result = await session.execute(query)
             await session.commit()
+            result = await session.execute(text("SELECT LAST_INSERT_ID()"))
             return result.scalar()
+           
 
     @classmethod
     async def update_account(cls, account_id, data: AccountAddSchema):

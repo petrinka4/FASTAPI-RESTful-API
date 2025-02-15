@@ -1,7 +1,7 @@
 from app.schemas import Social_StatusAddSchema
 from app.models.social_statusModel import social_statusModel
 from app.database import new_session
-from sqlalchemy import select, update, insert, delete
+from sqlalchemy import select, text, update, insert, delete
 
 
 class StatusOperations:
@@ -9,10 +9,10 @@ class StatusOperations:
     async def add_one_status(cls, data: Social_StatusAddSchema):
         async with new_session() as session:
             query = (insert(social_statusModel)
-                     .values(name=data.name)
-                     .returning(social_statusModel.id))
-            result = await session.execute(query)
+                     .values(name=data.name))
+            await session.execute(query)
             await session.commit()
+            result = await session.execute(text("SELECT LAST_INSERT_ID()"))
             return result.scalar()
 
     @classmethod

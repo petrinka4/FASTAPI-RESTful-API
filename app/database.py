@@ -2,7 +2,8 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
-engine = create_async_engine('sqlite+aiosqlite:///bank.db')
+engine = create_async_engine('mysql+aiomysql://user:qwerty@localhost:3306/bankDB')
+
 
 new_session = async_sessionmaker(engine, expire_on_commit=False)
 

@@ -4,7 +4,7 @@ from app.models.bankModel import bankModel
 from app.models.cityModel import cityModel
 
 from app.database import new_session
-from sqlalchemy import select, update, insert, delete
+from sqlalchemy import select, text, update, insert, delete
 
 
 class FilialOperations:
@@ -23,10 +23,10 @@ class FilialOperations:
             if (result.scalar_one_or_none() == None):
                 return {"error": "Incorrect city_id"}
             query = (insert(filialModel)
-                     .values(bank_id=data.bank_id, city_id=data.city_id)
-                     .returning(filialModel.id))
-            result = await session.execute(query)
+                     .values(bank_id=data.bank_id, city_id=data.city_id))
+            await session.execute(query)
             await session.commit()
+            result = await session.execute(text("SELECT LAST_INSERT_ID()"))
             return result.scalar()
 
     @classmethod

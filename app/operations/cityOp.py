@@ -2,7 +2,7 @@ from app.schemas import CityAddSchema
 from app.models.cityModel import cityModel
 
 from app.database import new_session
-from sqlalchemy import select, update, insert, delete
+from sqlalchemy import select, text, update, insert, delete
 
 
 class CityOperations:
@@ -10,10 +10,10 @@ class CityOperations:
     async def add_one_city(cls, data: CityAddSchema):
         async with new_session() as session:
             query = (insert(cityModel)
-                     .values(name=data.name)
-                     .returning(cityModel.id))
-            result = await session.execute(query)
+                     .values(name=data.name))
+            await session.execute(query)
             await session.commit()
+            result = await session.execute(text("SELECT LAST_INSERT_ID()"))
             return result.scalar()
 
     @classmethod

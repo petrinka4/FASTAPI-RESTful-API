@@ -1,7 +1,7 @@
 from app.schemas import BankAddSchema
 from app.models.bankModel import bankModel
 from app.database import new_session
-from sqlalchemy import select, update, insert, delete
+from sqlalchemy import select, text, update, insert, delete
 
 
 class BankOperations:
@@ -9,12 +9,12 @@ class BankOperations:
     @classmethod
     async def add_one_bank(cls, data: BankAddSchema):
         async with new_session() as session:
-            query = (insert(bankModel)
-                     .values(name=data.name)
-                     .returning(bankModel.id))
-            result = await session.execute(query)
+            query = insert(bankModel).values(name=data.name)
+            await session.execute(query) 
             await session.commit()
+            result = await session.execute(text("SELECT LAST_INSERT_ID()"))
             return result.scalar()
+
 
     @classmethod
     async def update_bank(cls, bank_id, data: BankAddSchema):

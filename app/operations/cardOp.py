@@ -2,7 +2,7 @@ from app.schemas import CardAddSchema
 from app.models.accountModel import accountModel
 from app.models.cardModel import cardModel
 from app.database import new_session
-from sqlalchemy import select, update, insert, delete
+from sqlalchemy import select, text, update, insert, delete
 
 
 class CardOperations:
@@ -20,10 +20,11 @@ class CardOperations:
             if (data.balance < 0):
                 return {"ok": False, "error": "Incorrect value of balance"}
             query = (insert(cardModel)
-                     .values(account_id=data.account_id, balance=data.balance)
-                     .returning(cardModel.id))
-            result = await session.execute(query)
+                     .values(account_id=data.account_id, balance=data.balance))
+            await session.execute(query)
             await session.commit()
+            result = await session.execute(text("SELECT LAST_INSERT_ID()"))
+
             return result.scalar()
 
     @classmethod

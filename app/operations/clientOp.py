@@ -2,7 +2,7 @@ from app.schemas import ClientAddSchema
 from app.models.clientModel import clientModel
 from app.models.social_statusModel import social_statusModel
 from app.database import new_session
-from sqlalchemy import select, update, insert, delete
+from sqlalchemy import select, text, update, insert, delete
 
 
 class ClientOperations:
@@ -16,10 +16,10 @@ class ClientOperations:
             if (result.one_or_none() == None):
                 return {"error": "Incorect social_status_id"}
             query = (insert(clientModel)
-                     .values(name=client.name, social_status_id=client.social_status_id)
-                     .returning(clientModel.id))
-            result = await session.execute(query)
+                     .values(name=client.name, social_status_id=client.social_status_id))
+            await session.execute(query)
             await session.commit()
+            result = await session.execute(text("SELECT LAST_INSERT_ID()"))
             return result.scalar()
 
     @classmethod
