@@ -1,26 +1,28 @@
+from fastapi import HTTPException
+from app.operations.general import GeneralOperations
 from app.schemas import ClientAddSchema
-from app.models.clientModel import clientModel
-from app.models.social_statusModel import social_statusModel
+
+from app.models.client import clientModel
+from app.models.social_status import social_statusModel
+
 from app.database import new_session
+
 from sqlalchemy import select, text, update, insert, delete
+from sqlalchemy.orm import DeclarativeMeta
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from pydantic import BaseModel
+
+from app.validation.client import validateClient
 
 
 class ClientOperations:
 
     @classmethod
-    async def add_one_client(cls, client: ClientAddSchema):
-        async with new_session() as session:
-            query = (select(social_statusModel).where(
-                social_statusModel.id == client.social_status_id))
-            result = await session.execute(query)
-            if (result.one_or_none() == None):
-                return {"error": "Incorect social_status_id"}
-            query = (insert(clientModel)
-                     .values(name=client.name, social_status_id=client.social_status_id))
-            await session.execute(query)
-            await session.commit()
-            result = await session.execute(text("SELECT LAST_INSERT_ID()"))
-            return result.scalar()
+    async def add_client(cls, Model: DeclarativeMeta, data: BaseModel, session: AsyncSession):
+        if (await validateClient(data, session)):
+            return await GeneralOperations.add_one(Model, data, session)
+        raise HTTPException(status_code=400, detail=f"Incorrect data")
 
     @classmethod
     async def update_client(cls, client_id: int, data: ClientAddSchema):

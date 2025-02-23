@@ -1,19 +1,23 @@
+
 from app.schemas import BankAddSchema
-from app.models.bankModel import bankModel
+
+from app.models.bank import bankModel
+
 from app.database import new_session
-from sqlalchemy import select, text, update, insert, delete
+from app.operations.general import GeneralOperations
+
+from sqlalchemy import select, text, update, insert
+from sqlalchemy.orm import DeclarativeMeta
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from pydantic import BaseModel
 
 
 class BankOperations:
-
     @classmethod
-    async def add_one_bank(cls, data: BankAddSchema):
-        async with new_session() as session:
-            query = insert(bankModel).values(name=data.name)
-            await session.execute(query) 
-            await session.commit()
-            result = await session.execute(text("SELECT LAST_INSERT_ID()"))
-            return result.scalar()
+    async def add_bank(cls, Model: DeclarativeMeta, data: BaseModel, session: AsyncSession):
+        return await GeneralOperations.add_one(Model, data, session)
+        
 
 
     @classmethod

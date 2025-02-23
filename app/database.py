@@ -1,10 +1,9 @@
-from typing import Annotated
-from fastapi import Depends
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+
 from dotenv import load_dotenv
 import os
 
-load_dotenv(dotenv_path=".env") 
+load_dotenv(dotenv_path=".env")
 
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
@@ -24,5 +23,5 @@ new_session = async_sessionmaker(engine, expire_on_commit=False)
 async def get_session():
     async with new_session() as session:
         yield session
-
-SessionDep = Annotated[AsyncSession, Depends(get_session)]
+# async with используется для работы с асинхронными контекстными менеджерами
+# это гарантирует, что после завершения работы с session, она будет автоматически закрыта

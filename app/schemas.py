@@ -9,7 +9,7 @@ class CityAddSchema(BaseModel):
     name: str
 
 
-class FilialAddSchema(BaseModel):
+class BranchAddSchema(BaseModel):
     bank_id: int
     city_id: int
 

@@ -1,19 +1,22 @@
+from app.operations.general import GeneralOperations
 from app.schemas import Social_StatusAddSchema
-from app.models.social_statusModel import social_statusModel
+
+from app.models.social_status import social_statusModel
+
 from app.database import new_session
-from sqlalchemy import select, text, update, insert, delete
+
+from sqlalchemy import select, text, update, insert
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import DeclarativeMeta
+
+from pydantic import BaseModel
 
 
 class StatusOperations:
     @classmethod
-    async def add_one_status(cls, data: Social_StatusAddSchema):
-        async with new_session() as session:
-            query = (insert(social_statusModel)
-                     .values(name=data.name))
-            await session.execute(query)
-            await session.commit()
-            result = await session.execute(text("SELECT LAST_INSERT_ID()"))
-            return result.scalar()
+    async def add_status(cls, Model: DeclarativeMeta, data: BaseModel, session: AsyncSession):
+        return await GeneralOperations.add_one(Model, data, session)
+        
 
     @classmethod
     async def update_status(cls, status_id, data: Social_StatusAddSchema):
