@@ -1,12 +1,12 @@
-from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
 from app.models.client import clientModel
 from app.schemas import ClientAddSchema
-from app.operations.client import ClientOperations
-from app.operations.general import GeneralOperations
+from app.resources.client import ClientResources
+from app.resources.general import GeneralResources
 
 router_client = APIRouter(
     prefix="/clients",
@@ -18,7 +18,7 @@ router_client = APIRouter(
 
 @router_client.get("")
 async def get_clients(session: AsyncSession = Depends(get_session)):
-    clients = await GeneralOperations.get_all(clientModel, session)
+    clients = await GeneralResources.get_all(clientModel, session)
     return clients
 
 # добавление клиента
@@ -27,7 +27,7 @@ async def get_clients(session: AsyncSession = Depends(get_session)):
 @router_client.post("")
 async def add_client(data: ClientAddSchema, session: AsyncSession = Depends(get_session)):
     try:
-        result = await ClientOperations.add_client(clientModel, data, session)
+        result = await ClientResources.add_client(data, session)
         return {"status_code": 200, "object": result}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error: {str(e)}")
@@ -38,7 +38,7 @@ async def add_client(data: ClientAddSchema, session: AsyncSession = Depends(get_
 @router_client.delete("/{client_id}")
 async def delete_client(client_id: int, session: AsyncSession = Depends(get_session)):
     try:
-        await GeneralOperations.delete_one(client_id, clientModel,session)
+        await GeneralResources.delete_one(client_id, clientModel, session)
         return {"status_code": 200, "message": "Deleted successfully"}
     except Exception as e:
         raise HTTPException(status_code=404, detail=f"Error: {str(e)}")
@@ -47,14 +47,20 @@ async def delete_client(client_id: int, session: AsyncSession = Depends(get_sess
 
 
 @router_client.get("/{client_id}")
-async def get_client_by_id(client_id: int):
-    result = await GeneralOperations.get_one(client_id, clientModel)
-    return result
+async def get_client_by_id(client_id: int, session: AsyncSession = Depends(get_session)):
+    try:
+        result = await GeneralResources.get_one(client_id, clientModel, session)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=f"Error: {str(e)}")
 
 # апдейт клиента по id
 
 
 @router_client.put("/{client_id}")
-async def update_client_by_id(client_id: int, client: Annotated[ClientAddSchema, Depends()]):
-    result = await ClientOperations.update_client(client_id, client)
-    return result
+async def update_client_by_id(client_id: int, data: ClientAddSchema, session: AsyncSession = Depends(get_session)):
+    try:
+        await ClientResources.update_client(client_id, data, session)
+        return {"status_code": 200, "message": "Updated successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error: {str(e)}")

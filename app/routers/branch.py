@@ -1,11 +1,10 @@
-from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.branch import branchModel
 from app.schemas import BranchAddSchema
-from app.operations.branch import BranchOperations
-from app.operations.general import GeneralOperations
+from app.resources.branch import BranchResources
+from app.resources.general import GeneralResources
 from app.database import get_session
 
 router_branch = APIRouter(
@@ -18,7 +17,7 @@ router_branch = APIRouter(
 
 @router_branch.get("")
 async def get_branches(session: AsyncSession = Depends(get_session)):
-    branches = await GeneralOperations.get_all(branchModel, session)
+    branches = await GeneralResources.get_all(branchModel, session)
     return branches
 
 # добавление филиала
@@ -27,7 +26,7 @@ async def get_branches(session: AsyncSession = Depends(get_session)):
 @router_branch.post("")
 async def add_branch(data: BranchAddSchema, session: AsyncSession = Depends(get_session)):
     try:
-        result = await BranchOperations.add_branch(branchModel, data, session)
+        result = await BranchResources.add_branch(data, session)
         return {"status_code": 200, "object": result}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error: {str(e)}")
@@ -38,7 +37,7 @@ async def add_branch(data: BranchAddSchema, session: AsyncSession = Depends(get_
 @router_branch.delete("/{branch_id}")
 async def delete_branch(branch_id: int, session: AsyncSession = Depends(get_session)):
     try:
-        await GeneralOperations.delete_one(branch_id, branchModel,session)
+        await GeneralResources.delete_one(branch_id, branchModel, session)
         return {"status_code": 200, "message": "Deleted successfully"}
     except Exception as e:
         raise HTTPException(status_code=404, detail=f"Error: {str(e)}")
@@ -47,14 +46,20 @@ async def delete_branch(branch_id: int, session: AsyncSession = Depends(get_sess
 
 
 @router_branch.get("/{branch_id}")
-async def get_branch_by_id(branch_id: int):
-    data = await GeneralOperations.get_one(branch_id, branchModel)
-    return data
+async def get_branch_by_id(branch_id: int, session: AsyncSession = Depends(get_session)):
+    try:
+        result = await GeneralResources.get_one(branch_id, branchModel, session)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=f"Error: {str(e)}")
 
 # апдейт филиала по id
 
 
 @router_branch.put("/{branch_id}")
-async def update_branch_by_id(branch_id: int, data: Annotated[BranchAddSchema, Depends()]):
-    result = await BranchOperations.update_branch(branch_id, data)
-    return result
+async def update_branch_by_id(branch_id: int, data: BranchAddSchema, session: AsyncSession = Depends(get_session)):
+    try:
+        await BranchResources.update_branch(branch_id, data, session)
+        return {"status_code": 200, "message": "Updated successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error: {str(e)}")

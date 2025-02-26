@@ -6,4 +6,5 @@ from app.validation.general import ValidateServise
 
 
 async def validateCard(data: BaseModel, session: AsyncSession):
-    return (await ValidateServise.validate_existence(accountModel, "account_id", data, session))
+    return (data.balance >= 0
+            and await ValidateServise.validate_existence(accountModel, "account_id", data, session))

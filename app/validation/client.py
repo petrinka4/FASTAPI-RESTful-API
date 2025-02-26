@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.models.social_status import social_statusModel
 from app.validation.general import ValidateServise
 
