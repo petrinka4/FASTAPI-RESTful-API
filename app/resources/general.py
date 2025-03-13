@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 
-from sqlalchemy import select, delete, insert, update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeMeta
 
@@ -9,34 +9,37 @@ from pydantic import BaseModel
 
 class GeneralResources:
     @classmethod
-    async def add_one(cls, Model: DeclarativeMeta, schema: BaseModel, session: AsyncSession):
-        query = insert(Model).values(**schema.model_dump())
-        result = await session.execute(query)
+    async def create(cls, Model: DeclarativeMeta, schema: BaseModel, session: AsyncSession):
+        obj = Model(**schema.model_dump())
+        session.add(obj)
         await session.commit()
-        inserted_id = result.lastrowid
-        return {"id": inserted_id, **schema.model_dump()}
+        return obj
 
+# сделал в несколько строчек для лучшей читаемости
     @classmethod
     async def get_all(cls, Model: DeclarativeMeta, session: AsyncSession):
-        return (await session.scalars(select(Model))).all()
+        query = select(Model)
+        result = await session.scalars(query)
+        return result.all()
 
     @classmethod
-    async def delete_one(cls, ID: int, Model: DeclarativeMeta, session: AsyncSession):
-        query = delete(Model).where(Model.id == ID)
-        result = await session.execute(query)
-        await session.commit()
-        if (result.rowcount == 0):
+    async def delete(cls, ID: int, Model: DeclarativeMeta, session: AsyncSession):
+        obj = await session.get(Model, ID)
+        if not obj:
             raise HTTPException(status_code=404, detail=f"Not found")
+        await session.delete(obj)
+        await session.commit()
 
     @classmethod
     async def get_one(cls, ID: int, Model: DeclarativeMeta, session: AsyncSession):
-        return (await session.scalar(select(Model).where(Model.id == ID)))
+        return await session.get(Model, ID)
 
     @classmethod
-    async def update_one(cls, Model: DeclarativeMeta, id: int, schema: BaseModel, session: AsyncSession):
-        query = update(Model).where(
-            Model.id == id).values(**schema.model_dump())
-        result = await session.execute(query)
+    async def update(cls, Model: DeclarativeMeta, ID: int, schema: BaseModel, session: AsyncSession):
+        obj = await session.get(Model, ID)
+        if not obj:
+            raise HTTPException(status_code=422, detail=f"Incorrect id")
+        for key, value in schema.model_dump().items():
+            setattr(obj, key, value)
         await session.commit()
-        inserted_id = result.lastrowid
-        return {"id": inserted_id, **schema.model_dump()}
+        return obj
