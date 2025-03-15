@@ -9,5 +9,5 @@ class AccountAddSchema(BaseModel):
     @validator('balance')
     def validate_balance(cls, value: int) -> int:
         if value < 0:
-            raise ValueError("Balance shoudnt be negative")
+            raise ValueError("Balance shouldnt be negative")
         return value

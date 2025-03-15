@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from pydantic import BaseModel
+from pydantic import BaseModel, MySQLDsn
 from pydantic_settings import (
     BaseSettings,
     SettingsConfigDict,
@@ -8,11 +8,12 @@ from pydantic_settings import (
 
 
 class DatabaseConfig(BaseModel):
+    scheme: str
     user: str
     password: str
     host: str
-    port: str
-    name: str
+    port: int
+    path: str
 
 
 class Settings(BaseSettings):
@@ -24,16 +25,18 @@ class Settings(BaseSettings):
     )
     db: DatabaseConfig
 
+    def DATABASE_URL(self) -> MySQLDsn:
+        return MySQLDsn.build(
+            scheme=str(self.db.scheme),
+            username=str(self.db.user),
+            password=str(self.db.password),
+            host=str(self.db.host),
+            port=self.db.port,
+            path=str(self.db.path)
+        )
+
 
 settings = Settings()
+DB_URL: MySQLDsn = settings.DATABASE_URL()
 
-DB_USER = settings.db.user
-DB_PASSWORD = settings.db.password
-DB_HOST = settings.db.host
-DB_PORT = settings.db.port
-DB_NAME = settings.db.name
-
-
-engine = create_async_engine(
-    f"mysql+aiomysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-)
+engine = create_async_engine(str(DB_URL))

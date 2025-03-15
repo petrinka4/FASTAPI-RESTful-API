@@ -10,6 +10,7 @@ from app.routers.status import router_status
 from app.routers.client import router_client
 from app.routers.card import router_card
 from app.database import engine
+from app.error_handling import register_error_handlers
 
 
 @asynccontextmanager
@@ -22,6 +23,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+register_error_handlers(app)
 
 app.include_router(router_bank)
 app.include_router(router_city)

@@ -7,36 +7,38 @@ from sqlalchemy.orm import DeclarativeMeta
 from pydantic import BaseModel
 
 
-class GeneralResources:
+class BaseRepository:
+    Model: DeclarativeMeta = None
+
     @classmethod
-    async def create(cls, Model: DeclarativeMeta, schema: BaseModel, session: AsyncSession):
-        obj = Model(**schema.model_dump())
+    async def create(cls, schema: BaseModel, session: AsyncSession):
+        obj = cls.Model(**schema.model_dump())
         session.add(obj)
         await session.commit()
         return obj
 
 # сделал в несколько строчек для лучшей читаемости
     @classmethod
-    async def get_all(cls, Model: DeclarativeMeta, session: AsyncSession):
-        query = select(Model)
+    async def get_all(cls, session: AsyncSession):
+        query = select(cls.Model)
         result = await session.scalars(query)
         return result.all()
 
     @classmethod
-    async def delete(cls, ID: int, Model: DeclarativeMeta, session: AsyncSession):
-        obj = await session.get(Model, ID)
+    async def delete(cls, ID: int, session: AsyncSession):
+        obj = await session.get(cls.Model, ID)
         if not obj:
             raise HTTPException(status_code=404, detail=f"Not found")
         await session.delete(obj)
         await session.commit()
 
     @classmethod
-    async def get_one(cls, ID: int, Model: DeclarativeMeta, session: AsyncSession):
-        return await session.get(Model, ID)
+    async def get_one(cls, ID: int, session: AsyncSession):
+        return await session.get(cls.Model, ID)
 
     @classmethod
-    async def update(cls, Model: DeclarativeMeta, ID: int, schema: BaseModel, session: AsyncSession):
-        obj = await session.get(Model, ID)
+    async def update(cls, ID: int, schema: BaseModel, session: AsyncSession):
+        obj = await session.get(cls.Model, ID)
         if not obj:
             raise HTTPException(status_code=422, detail=f"Incorrect id")
         for key, value in schema.model_dump().items():
