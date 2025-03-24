@@ -1,10 +1,13 @@
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import List
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
-from app.schemas.bank import BankAddSchema
+from app.schemas.bank import BankAddSchema, BankGetSchema, BankUpdateSchema
+from app.schemas.account import AccountGetSchema
 from app.repositories.bank import BankRepository
+from app.schemas.branch import BranchGetSchema
 
 router_bank = APIRouter(
     prefix="/banks",
@@ -12,28 +15,38 @@ router_bank = APIRouter(
 )
 
 
-@router_bank.post("", status_code=status.HTTP_201_CREATED)
+# получение всех аккаунтов  банка
+@router_bank.get("/{bank_id}/accounts", status_code=status.HTTP_200_OK, response_model=List[AccountGetSchema])
+async def get_bank_accounts(bank_id: int, session: AsyncSession = Depends(get_session)):
+    return await BankRepository.get_accounts(bank_id, session)
+
+# получение всех филиалов  банка
+@router_bank.get("/{bank_id}/branches", status_code=status.HTTP_200_OK, response_model=List[BranchGetSchema])
+async def get_bank_branches(bank_id: int, session: AsyncSession = Depends(get_session)):
+    return await BankRepository.get_branches(bank_id, session)
+
+@router_bank.post("", status_code=status.HTTP_201_CREATED, response_model=BankGetSchema)
 async def create_bank(data: BankAddSchema, session: AsyncSession = Depends(get_session)):
     result = await BankRepository.create(data, session)
-    return {"object": result}
+    return result
 
 
 # получение всех банков
-@router_bank.get("", status_code=status.HTTP_200_OK)
+@router_bank.get("", status_code=status.HTTP_200_OK, response_model=List[BankGetSchema])
 async def get_banks(session: AsyncSession = Depends(get_session)):
     banks = await BankRepository.get_all(session)
     return banks
 
 
 # удаление банка по id
-@router_bank.delete("/{bank_id}", status_code=status.HTTP_200_OK)
+@router_bank.delete("/{bank_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_bank(bank_id: int, session: AsyncSession = Depends(get_session)):
     await BankRepository.delete(bank_id,  session)
     return {"message": "Deleted successfully"}
 
 
 # получение банка по id
-@router_bank.get("/{bank_id}", status_code=status.HTTP_200_OK)
+@router_bank.get("/{bank_id}", status_code=status.HTTP_200_OK, response_model=BankGetSchema)
 async def get_bank_by_id(bank_id: int, session: AsyncSession = Depends(get_session)):
     result = await BankRepository.get_one(bank_id,  session)
     return result
@@ -41,7 +54,7 @@ async def get_bank_by_id(bank_id: int, session: AsyncSession = Depends(get_sessi
 # апдейт банка по id
 
 
-@router_bank.put("/{bank_id}", status_code=status.HTTP_200_OK)
+@router_bank.put("/{bank_id}", status_code=status.HTTP_200_OK, response_model=BankUpdateSchema)
 async def update_bank_by_id(bank_id: int, data: BankAddSchema, session: AsyncSession = Depends(get_session)):
     result = await BankRepository.update(bank_id, data, session)
     return {"object": result}

@@ -1,9 +1,11 @@
 from typing import Any, Callable
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.exc import IntegrityError
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse, PlainTextResponse
+from fastapi.responses import JSONResponse
+
+
 
 
 def create_exception_handler(

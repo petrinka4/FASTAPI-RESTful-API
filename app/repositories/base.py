@@ -17,7 +17,6 @@ class BaseRepository:
         await session.commit()
         return obj
 
-# сделал в несколько строчек для лучшей читаемости
     @classmethod
     async def get_all(cls, session: AsyncSession):
         query = select(cls.Model)
