@@ -1,22 +1,25 @@
 from typing import List
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.schemas.branch import BranchAddSchema, BranchGetSchema, BranchUpdateSchema
 from app.repositories.branch import BranchRepository
 from app.database import get_session
+from app.schemas.pagination import PaginationSchema
 
 router_branch = APIRouter(
-    prefix="/branch",
+    prefix="/branches",
     tags=["branch"]
 )
 
 # получение всех филиалов
 
 
-@router_branch.get("", status_code=status.HTTP_200_OK, response_model=List[BranchGetSchema])
-async def get_branches(session: AsyncSession = Depends(get_session)):
-    branches = await BranchRepository.get_all(session)
+@router_branch.get("", status_code=status.HTTP_200_OK, response_model=PaginationSchema[BranchGetSchema])
+async def get_branches(page: int = Query(1, ge=1),
+                       per_page: int = Query(10, ge=1, le=100),
+                       session: AsyncSession = Depends(get_session)):
+    branches = await BranchRepository.get_all(session, page, per_page)
     return branches
 
 

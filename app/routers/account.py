@@ -1,6 +1,6 @@
 
 from typing import List
-from fastapi import APIRouter, Depends,  status
+from fastapi import APIRouter, Depends, Query,  status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -10,6 +10,7 @@ from app.schemas.account import AccountAddSchema, AccountGetSchema, AccountUpdat
 from app.schemas.bank import BankGetSchema
 from app.schemas.card import CardGetSchema
 from app.schemas.client import ClientGetSchema
+from app.schemas.pagination import PaginationSchema
 
 
 router_account = APIRouter(
@@ -19,16 +20,22 @@ router_account = APIRouter(
 
 
 # получение всех карт аккаунта
-@router_account.get("/{account_id}/cards", status_code=status.HTTP_200_OK, response_model=List[CardGetSchema])
-async def get_account_cards(account_id: int, session: AsyncSession = Depends(get_session)):
-    return await AccountRepository.get_cards(account_id, session)
+@router_account.get("/{account_id}/cards", status_code=status.HTTP_200_OK, response_model=PaginationSchema[CardGetSchema])
+async def get_account_cards(account_id: int,
+                            page: int = Query(1, ge=1),
+                            per_page: int = Query(10, ge=1, le=100),
+                            session: AsyncSession = Depends(get_session)
+                            ):
+    return await AccountRepository.get_cards(account_id, session, page, per_page)
 
 # получение всех аккаунтов
 
 
-@router_account.get("", status_code=status.HTTP_200_OK, response_model=List[AccountGetSchema])
-async def get_accounts(session: AsyncSession = Depends(get_session)):
-    accounts = await AccountRepository.get_all(session)
+@router_account.get("", status_code=status.HTTP_200_OK, response_model=PaginationSchema[AccountGetSchema])
+async def get_accounts(page: int = Query(1, ge=1),
+                       per_page: int = Query(10, ge=1, le=100),
+                       session: AsyncSession = Depends(get_session)):
+    accounts = await AccountRepository.get_all(session, page, per_page)
     return accounts
 
 # добавление аккаунта

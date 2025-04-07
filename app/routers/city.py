@@ -1,11 +1,12 @@
 from typing import List
-from fastapi import APIRouter, Depends,  status
+from fastapi import APIRouter, Depends, Query,  status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
 from app.schemas.branch import BranchGetSchema
 from app.schemas.city import CityAddSchema, CityGetSchema, CityUpdateSchema
 from app.repositories.city import CityRepository
+from app.schemas.pagination import PaginationSchema
 
 router_city = APIRouter(
     prefix="/cities",
@@ -13,12 +14,13 @@ router_city = APIRouter(
 )
 
 
-
 # получение всех филиалов города
-@router_city.get("/{city_id}/branches", status_code=status.HTTP_200_OK, response_model=List[BranchGetSchema])
-async def get_city_branches(city_id: int, session: AsyncSession = Depends(get_session)):
-    return await CityRepository.get_branches(city_id, session)
-
+@router_city.get("/{city_id}/branches", status_code=status.HTTP_200_OK, response_model=PaginationSchema[BranchGetSchema])
+async def get_city_branches(city_id: int,
+                            page: int = Query(1, ge=1),
+                            per_page: int = Query(10, ge=1, le=100),
+                            session: AsyncSession = Depends(get_session)):
+    return await CityRepository.get_branches(city_id, session, page, per_page)
 
 
 # добавление города
@@ -31,9 +33,11 @@ async def create_city(data: CityAddSchema, session: AsyncSession = Depends(get_s
 
 
 # получение всех городов
-@router_city.get("", status_code=status.HTTP_200_OK, response_model=List[CityGetSchema])
-async def get_cities(session: AsyncSession = Depends(get_session)):
-    cities = await CityRepository.get_all(session)
+@router_city.get("", status_code=status.HTTP_200_OK, response_model=PaginationSchema[CityGetSchema])
+async def get_cities(page: int = Query(1, ge=1),
+                     per_page: int = Query(10, ge=1, le=100),
+                     session: AsyncSession = Depends(get_session)):
+    cities = await CityRepository.get_all(session, page, per_page)
     return cities
 
 

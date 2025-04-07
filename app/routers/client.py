@@ -1,12 +1,13 @@
 
 from typing import List
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
 from app.schemas.account import AccountGetSchema
 from app.schemas.client import ClientAddSchema, ClientGetSchema, ClientUpdateSchema
 from app.repositories.client import ClientRepository
+from app.schemas.pagination import PaginationSchema
 
 router_client = APIRouter(
     prefix="/clients",
@@ -15,17 +16,22 @@ router_client = APIRouter(
 
 
 # получение всех аккаунтов  клиента
-@router_client.get("/{client_id}/accounts", status_code=status.HTTP_200_OK, response_model=List[AccountGetSchema])
-async def get_client_accounts(client_id: int, session: AsyncSession = Depends(get_session)):
-    return await ClientRepository.get_accounts(client_id, session)
+@router_client.get("/{client_id}/accounts", status_code=status.HTTP_200_OK, response_model=PaginationSchema[AccountGetSchema])
+async def get_client_accounts(client_id: int,
+                              page: int = Query(1, ge=1),
+                              per_page: int = Query(10, ge=1, le=100),
+                              session: AsyncSession = Depends(get_session)):
+    return await ClientRepository.get_accounts(client_id, session, page, per_page)
 
 
 # получение всех клиентов
 
 
-@router_client.get("", status_code=status.HTTP_200_OK, response_model=List[ClientGetSchema])
-async def get_clients(session: AsyncSession = Depends(get_session)):
-    clients = await ClientRepository.get_all(session)
+@router_client.get("", status_code=status.HTTP_200_OK, response_model=PaginationSchema[ClientGetSchema])
+async def get_clients(page: int = Query(1, ge=1),
+                      per_page: int = Query(10, ge=1, le=100),
+                      session: AsyncSession = Depends(get_session)):
+    clients = await ClientRepository.get_all(session, page, per_page)
     return clients
 
 # добавление клиента

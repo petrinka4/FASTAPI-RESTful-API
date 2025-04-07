@@ -1,10 +1,11 @@
 from typing import List
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
 from app.schemas.card import CardAddSchema, CardGetSchema, CardUpdateSchema
 from app.repositories.card import CardRepository
+from app.schemas.pagination import PaginationSchema
 
 router_card = APIRouter(
     prefix="/cards",
@@ -14,9 +15,11 @@ router_card = APIRouter(
 # получение всех карт
 
 
-@router_card.get("", status_code=status.HTTP_200_OK, response_model=List[CardGetSchema])
-async def get_cards(session: AsyncSession = Depends(get_session)):
-    cards = await CardRepository.get_all(session)
+@router_card.get("", status_code=status.HTTP_200_OK, response_model=PaginationSchema[CardGetSchema])
+async def get_cards(page: int = Query(1, ge=1),
+                    per_page: int = Query(10, ge=1, le=100),
+                    session: AsyncSession = Depends(get_session)):
+    cards = await CardRepository.get_all(session, page, per_page)
     return cards
 
 # добавление карты
@@ -46,7 +49,7 @@ async def get_card_by_id(card_id: int, session: AsyncSession = Depends(get_sessi
 # апдейт карты по id
 
 
-@router_card.put("/{card_id}", status_code=status.HTTP_200_OK, response_model=CardUpdateSchema)
-async def update_card_by_id(card_id: int, data: CardAddSchema, session: AsyncSession = Depends(get_session)):
+@router_card.put("/{card_id}", status_code=status.HTTP_200_OK, response_model=CardGetSchema)
+async def update_card_by_id(card_id: int, data: CardUpdateSchema, session: AsyncSession = Depends(get_session)):
     result = await CardRepository.update(card_id, data, session)
     return result
