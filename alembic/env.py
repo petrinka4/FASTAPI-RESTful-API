@@ -31,6 +31,9 @@ from app.models.city import cityModel
 from app.models.branch import branchModel
 from app.models.client import clientModel
 from app.models.account import accountModel
+from app.models.role import roleModel
+from app.models.user import userModel
+
 from app.models.card import cardModel
 
 
