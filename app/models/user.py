@@ -4,7 +4,7 @@ from sqlalchemy import Boolean, ForeignKey, LargeBinary, String
 from sqlalchemy.orm import Mapped, mapped_column,relationship
 
 from app.models.role import roleModel
-from app.auth import utils
+
 
 
 class userModel(Base):
@@ -21,6 +21,7 @@ class userModel(Base):
     
     def __init__(self, **kwargs):
         # Хешируем пароль при создании объекта
+        from app.auth import utils
         if 'password' in kwargs:
             kwargs['password'] = utils.hash_password(kwargs['password'])
         super().__init__(**kwargs)
