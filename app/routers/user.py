@@ -15,7 +15,7 @@ router_user = APIRouter(
 @router_user.put("/{user_id}/active", status_code=status.HTTP_200_OK, response_model=UserGetSchema)
 async def update_user_active(user_id: int,
                              data: UserUpdateActiveSchema,
-                             _: None = Depends(utils.is_admin_access),
+                             _: bool = utils.role_required(["admin"]),
                              session: AsyncSession = Depends(get_session)):
     result = await UserRepository.update(user_id, data, session)
     return result
@@ -24,7 +24,7 @@ async def update_user_active(user_id: int,
 @router_user.put("/{user_id}/role", status_code=status.HTTP_200_OK, response_model=UserGetSchema)
 async def update_user_role(user_id: int,
                            data: UserUpdateRoleSchema,
-                           _: None = Depends(utils.is_admin_access),
+                           _: bool = utils.role_required(["admin"]),
                            session: AsyncSession = Depends(get_session)):
     result = await UserRepository.update(user_id, data, session)
     return result

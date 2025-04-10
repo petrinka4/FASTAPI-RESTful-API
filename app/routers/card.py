@@ -17,7 +17,7 @@ router_card = APIRouter(
 
 
 @router_card.get("", status_code=status.HTTP_200_OK, response_model=PaginationSchema[CardGetSchema])
-async def get_cards(_: None = Depends(utils.is_editor_access),
+async def get_cards(_: bool = utils.role_required(["admin", "editor"]),
                     page: int = Query(1, ge=1),
                     per_page: int = Query(10, ge=1, le=100),
                     session: AsyncSession = Depends(get_session)):
@@ -29,7 +29,7 @@ async def get_cards(_: None = Depends(utils.is_editor_access),
 
 @router_card.post("", status_code=status.HTTP_201_CREATED, response_model=CardGetSchema)
 async def create_card(data: CardAddSchema,
-                      _: None = Depends(utils.is_editor_access),
+                      _: bool = utils.role_required(["admin", "editor"]),
                       session: AsyncSession = Depends(get_session)):
     result = await CardRepository.create(data, session)
     return result
@@ -39,7 +39,7 @@ async def create_card(data: CardAddSchema,
 
 @router_card.delete("/{card_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_card(card_id: int,
-                      _: None = Depends(utils.is_editor_access),
+                      _: bool = utils.role_required(["admin", "editor"]),
                       session: AsyncSession = Depends(get_session)):
     await CardRepository.delete(card_id,  session)
     return {"message": "Deleted successfully"}
@@ -49,7 +49,7 @@ async def delete_card(card_id: int,
 
 @router_card.get("/{card_id}", status_code=status.HTTP_200_OK, response_model=CardGetSchema)
 async def get_card_by_id(card_id: int,
-                         _: None = Depends(utils.is_editor_access),
+                         _: bool = utils.role_required(["admin", "editor"]),
                          session: AsyncSession = Depends(get_session)):
     result = await CardRepository.get_one(card_id,  session)
     return result
@@ -60,7 +60,7 @@ async def get_card_by_id(card_id: int,
 @router_card.put("/{card_id}", status_code=status.HTTP_200_OK, response_model=CardGetSchema)
 async def update_card_by_id(card_id: int,
                             data: CardUpdateSchema,
-                            _: None = Depends(utils.is_editor_access),
+                            _: bool = utils.role_required(["admin", "editor"]),
                             session: AsyncSession = Depends(get_session)):
     result = await CardRepository.update(card_id, data, session)
     return result

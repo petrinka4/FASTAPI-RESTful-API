@@ -23,7 +23,7 @@ router_account = APIRouter(
 # получение всех карт аккаунта
 @router_account.get("/{account_id}/cards", status_code=status.HTTP_200_OK, response_model=PaginationSchema[CardGetSchema])
 async def get_account_cards(account_id: int,
-                            _: None = Depends(utils.is_editor_access),
+                            _: bool = utils.role_required(["admin", "editor"]),
                             page: int = Query(1, ge=1),
                             per_page: int = Query(10, ge=1, le=100),
                             session: AsyncSession = Depends(get_session)
@@ -34,7 +34,7 @@ async def get_account_cards(account_id: int,
 
 
 @router_account.get("", status_code=status.HTTP_200_OK, response_model=PaginationSchema[AccountGetSchema])
-async def get_accounts(_: None = Depends(utils.is_editor_access),
+async def get_accounts(_: bool = utils.role_required(["admin", "editor"]),
                        page: int = Query(1, ge=1),
                        per_page: int = Query(10, ge=1, le=100),
                        session: AsyncSession = Depends(get_session)):
@@ -46,7 +46,7 @@ async def get_accounts(_: None = Depends(utils.is_editor_access),
 
 @router_account.post("", status_code=status.HTTP_201_CREATED, response_model=AccountGetSchema)
 async def create_account(data: AccountAddSchema,
-                         _: None = Depends(utils.is_user_access),
+                         _: bool = utils.role_required(["admin", "editor","user"]),
                          session: AsyncSession = Depends(get_session)):
     result = await AccountRepository.create(data, session)
     return result
@@ -56,7 +56,7 @@ async def create_account(data: AccountAddSchema,
 
 @router_account.delete("/{account_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_account(account_id: int,
-                         _: None = Depends(utils.is_editor_access),
+                         _: bool = utils.role_required(["admin", "editor"]),
                          session: AsyncSession = Depends(get_session)):
     await AccountRepository.delete(account_id, session)
     return {"message": "Deleted successfully"}
@@ -67,7 +67,7 @@ async def delete_account(account_id: int,
 
 @router_account.get("/{account_id}", status_code=status.HTTP_200_OK, response_model=AccountGetSchema)
 async def get_account_by_id(account_id: int,
-                            _: None = Depends(utils.is_editor_access),
+                            _: bool = utils.role_required(["admin", "editor"]),
                             session: AsyncSession = Depends(get_session)):
     result = await AccountRepository.get_one(account_id, session)
     return result
@@ -79,7 +79,7 @@ async def get_account_by_id(account_id: int,
 @router_account.put("/{account_id}", status_code=status.HTTP_200_OK, response_model=AccountUpdateSchema)
 async def update_account_by_id(account_id: int,
                                data: AccountAddSchema,
-                               _: None = Depends(utils.is_editor_access),
+                               _: bool = utils.role_required(["admin", "editor"]),
                                session: AsyncSession = Depends(get_session)):
     result = await AccountRepository.update(account_id, data, session)
     return result

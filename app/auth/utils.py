@@ -5,17 +5,14 @@ from sqlalchemy import select
 from app.config import settings
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Form, HTTPException
 
 from app.database import get_session
 from app.models.user import userModel
 
 http_bearer = HTTPBearer()
 
-allowed_admin = ["admin"]
-allowed_edit = ["admin", "editor"]
-allowed_read = allowed_edit.copy()
-allowed_read.append("user")
+
 
 
 def encode_jwt(
@@ -85,12 +82,13 @@ async def get_user_role_by_username(username: str, session: AsyncSession):
         return role
     return None
 
-
+#эта функция просто возвращает роль юзера, она не проверяет доступ пользователя к роутеру
 async def get_user_active_by_username(username: str, session: AsyncSession):
     query = select(userModel).filter(userModel.username == username)
     result = await session.execute(query)
     user = result.scalar()
-
+#следовательно тут идет проверка на то существует ли такой юзер в бд,
+# а не на то что бы юзер был активный следовательно ошибка правильная
     if user:
         active = user.active
         return active
@@ -98,7 +96,9 @@ async def get_user_active_by_username(username: str, session: AsyncSession):
         status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
 
-def get_user_from_jwt_refresh(credentials: HTTPAuthorizationCredentials = Depends(http_bearer)):
+
+
+def validate_refresh_token(credentials: HTTPAuthorizationCredentials = Depends(http_bearer)):
     token = credentials.credentials
     decoded_data = decode_jwt(token)
     if decoded_data is None:
@@ -112,75 +112,65 @@ def get_user_from_jwt_refresh(credentials: HTTPAuthorizationCredentials = Depend
     if username == None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-    return username
+    return decoded_data
+
+async def validate_auth_user(
+    session: AsyncSession = Depends(get_session),
+    username: str = Form(...),
+    password: str = Form(...)
+):
+    unauthed_exc = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid username or password"
+    )
+
+    result = await session.execute(select(userModel).where(userModel.username == username))
+    user = result.scalars().first()
+
+    if not user:
+        raise unauthed_exc
+    if not validate_password(password=password, hash_password=user.password):
+        raise unauthed_exc
+
+    return user
+
+def role_required(allowed_roles: list[str]):
+    async def _check_role(
+        credentials: HTTPAuthorizationCredentials = Depends(http_bearer),
+        session: AsyncSession = Depends(get_session)
+    ):
+        token = credentials.credentials
+        decoded_data = decode_jwt(token)
+        
+        if decoded_data is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, 
+                detail="Invalid token"
+            )
+            
+        if decoded_data.get("type") != "access":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, 
+                detail="Invalid token type"
+            )
+            
+        username = decoded_data.get("username")
+        active = await get_user_active_by_username(username, session)
+        if not active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, 
+                detail="User inactive"
+            )
+
+        role = decoded_data.get("role")
+        if role not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient permissions"
+            )
+            
+        return True
+
+    return Depends(_check_role)
 
 
-async def is_admin_access(credentials: HTTPAuthorizationCredentials = Depends(http_bearer),
-                          session: AsyncSession = Depends(get_session)):
-    token = credentials.credentials
-    decoded_data = decode_jwt(token)
-    if decoded_data is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-    type = decoded_data.get("type")
-    if type != "access":
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token type")
-    
-    username = decoded_data.get("username")
-    active = await get_user_active_by_username(username,session)
-    if active != True:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="User inactive")
-    role = decoded_data.get("role")
-    if role not in allowed_admin:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
-    return
-
-
-async def is_editor_access(credentials: HTTPAuthorizationCredentials = Depends(http_bearer),
-                           session: AsyncSession = Depends(get_session)):
-    token = credentials.credentials
-    decoded_data = decode_jwt(token)
-    if decoded_data is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-    type = decoded_data.get("type")
-    if type != "access":
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token type")
-    username = decoded_data.get("username")
-    active = await get_user_active_by_username(username,session)
-    if active != True:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="User inactive")
-
-    role = decoded_data.get("role")
-    if role not in allowed_edit:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
-    return
-
-
-async def is_user_access(credentials: HTTPAuthorizationCredentials = Depends(http_bearer),
-                         session: AsyncSession = Depends(get_session)):
-    token = credentials.credentials
-    decoded_data = decode_jwt(token)
-    if decoded_data is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-    type = decoded_data.get("type")
-    if type != "access":
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token type")
-    username = decoded_data.get("username")
-    active = await get_user_active_by_username(username,session)
-    if active != True:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="User inactive")
-    role = decoded_data.get("role")
-    if role not in allowed_read:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
-    return
