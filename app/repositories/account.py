@@ -1,4 +1,3 @@
-from sqlalchemy import func, select
 from app.models.card import cardModel
 from app.repositories.base import BaseRepository
 from app.models.account import accountModel

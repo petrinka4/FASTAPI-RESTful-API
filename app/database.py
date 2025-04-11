@@ -6,7 +6,8 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 
 
-DB_URL: MySQLDsn = settings.db.DATABASE_URL()
+DB_URL: MySQLDsn = settings.MYSQL.DATABASE_URL()
+
 engine = create_async_engine(str(DB_URL))
 
 new_session = async_sessionmaker(engine, expire_on_commit=False)

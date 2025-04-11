@@ -12,7 +12,7 @@ from app.config import settings
 # access to the values within the .ini file in use.
 config = context.config
 
-config.set_main_option("sqlalchemy.url",str(settings.db.DATABASE_URL()))
+config.set_main_option("sqlalchemy.url",str(settings.MYSQL.DATABASE_URL()))
 
 
 

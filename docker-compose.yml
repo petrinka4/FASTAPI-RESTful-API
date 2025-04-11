@@ -8,15 +8,11 @@ services:
     env_file:
       - .env
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: ${FASTAPI__DB__PATH}
-      MYSQL_USER: ${FASTAPI__DB__USER}
-      MYSQL_PASSWORD: ${FASTAPI__DB__PASSWORD}
+      MYSQL_ROOT_PASSWORD: root  # Указываем здесь явно
     ports:
       - "3307:3306"  # локальный порт 3307 -> контейнерный 3306
     volumes:
       - db_data:/var/lib/mysql
-
   fastapi:
     build: .
     container_name: fastapi-app
@@ -24,6 +20,8 @@ services:
       - "8000:8000"
     env_file:
       - .env
+    environment:
+      DB_HOST: db 
     depends_on:
       - db
 

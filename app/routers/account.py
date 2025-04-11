@@ -1,5 +1,4 @@
 
-from typing import List
 from fastapi import APIRouter, Depends, Query,  status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -8,9 +7,7 @@ from app.auth import utils
 from app.database import get_session
 from app.repositories.account import AccountRepository
 from app.schemas.account import AccountAddSchema, AccountGetSchema, AccountUpdateSchema
-from app.schemas.bank import BankGetSchema
 from app.schemas.card import CardGetSchema
-from app.schemas.client import ClientGetSchema
 from app.schemas.pagination import PaginationSchema
 
 

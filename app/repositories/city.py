@@ -1,4 +1,3 @@
-from sqlalchemy import func, select
 from app.models.branch import branchModel
 from app.repositories.base import BaseRepository
 from app.models.city import cityModel
