@@ -12,7 +12,7 @@ from app.config import settings
 # access to the values within the .ini file in use.
 config = context.config
 
-config.set_main_option("sqlalchemy.url",str(settings.db.DATABASE_URL()))
+config.set_main_option("sqlalchemy.url",str(settings.MYSQL.DATABASE_URL()))
 
 
 
@@ -31,6 +31,9 @@ from app.models.city import cityModel
 from app.models.branch import branchModel
 from app.models.client import clientModel
 from app.models.account import accountModel
+from app.models.role import roleModel
+from app.models.user import userModel
+
 from app.models.card import cardModel
 
 
